@@ -1,0 +1,140 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC Audio to Avatar real time demo</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<!-- three.min.js r110 -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.110.0/build/three.min.js"></script>
+
+<!-- GLTFLoader.js -->
+<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r110/examples/js/loaders/GLTFLoader.js"></script>
+
+<!-- OrbitControls.js -->
+<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r110/examples/js/controls/OrbitControls.js"></script>
+
+<!-- pixiv three-vrm.js -->
+<script src="https://unpkg.com/@pixiv/three-vrm@0.3.0/lib/three-vrm.js"></script>
+
+<h2>Options</h2>
+<div class="option">
+    <input id="use-datachannel" checked="checked" type="checkbox"/>
+    <label for="use-datachannel">Use datachannel</label>
+    <select id="datachannel-parameters">
+        <option value='{"ordered": true}'>Ordered, reliable</option>
+        <option value='{"ordered": false, "maxRetransmits": 0}'>Unordered, no retransmissions</option>
+        <option value='{"ordered": false, "maxPacketLifetime": 500}'>Unordered, 500ms lifetime</option>
+    </select>
+</div>
+<div class="option">
+    <input id="use-audio" checked="checked" type="checkbox"/>
+    <label for="use-audio">Use audio</label>
+    <select id="audio-codec">
+        <option value="default" selected>Default codecs</option>
+        <option value="opus/48000/2">Opus</option>
+        <option value="PCMU/8000">PCMU</option>
+        <option value="PCMA/8000">PCMA</option>
+    </select>
+</div>
+<div class="option">
+    <input id="use-video" type="checkbox"/>
+    <label for="use-video">Use video</label>
+    <select id="video-resolution">
+        <option value="" selected>Default resolution</option>
+        <option value="320x240">320x240</option>
+        <option value="640x480">640x480</option>
+        <option value="960x540">960x540</option>
+        <option value="1280x720">1280x720</option>
+    </select>
+    <select id="video-transform">
+        <option value="none" selected>No transform</option>
+        <option value="edges">Edge detection</option>
+        <option value="cartoon">Cartoon effect</option>
+        <option value="rotate">Rotate</option>
+    </select>
+    <select id="video-codec">
+        <option value="default" selected>Default codecs</option>
+        <option value="VP8/90000">VP8</option>
+        <option value="H264/90000">H264</option>
+    </select>
+</div>
+<div class="option">
+    <input id="use-stun" type="checkbox"/>
+    <label for="use-stun">Use STUN server</label>
+</div>
+
+<button id="start" onclick="start()">Start</button>
+<button id="stop" style="display: none" onclick="stop()">Stop</button>
+
+<h2>State</h2>
+<p>
+    ICE gathering state: <span id="ice-gathering-state"></span>
+</p>
+<p>
+    ICE connection state: <span id="ice-connection-state"></span>
+</p>
+<p>
+    Signaling state: <span id="signaling-state"></span>
+</p>
+
+<div id="media" style="display: none">
+    <h2>Media</h2>
+
+    <audio id="audio" autoplay="true"></audio>
+    <video id="video" autoplay="true" playsinline="true"></video>
+</div>
+
+<h2>Avatar Interface</h2>
+<div class="interface" id="interface" onclick="interface()">
+
+    <div class="closebtn" id="closebtn" onclick="hideinterface()">❌</div>
+
+    <div class="sliders" id="sliders">
+
+        <p>
+            <span class="controlboxlabel">Input Volume VU</span>
+            <input type="range" min="0" max="100" value="10" class="slider" id="inputlevel">
+
+            <br>
+
+            <span class="controlboxlabel">Mouth Threshold</span>
+            <input type="range" min="0" max="50" value="10" class="slider" id="mouththreshold">
+
+            <br>
+            <span class="controlboxlabel">Body Threshold</span>
+            <input type="range" min="0" max="50" value="10" class="slider" id="bodythreshold">
+
+            <br>
+            <span class="controlboxlabel">Mouth Gain Boost</span>
+            <input type="range" min="0" max="25" value="10" class="slider" id="mouthboost">
+
+            <br>
+            <span class="controlboxlabel">Body Gain Boost</span>
+            <input type="range" min="0" max="25" value="10" class="slider" id="bodymotion">
+
+            <br>
+            <span class="controlboxlabel">Serious / Smiling</span>
+            <input type="range" min="0" max="100" value="80" class="slider" id="expression">
+
+        </p>
+
+    </div>
+</div>
+
+<h2>Data channel</h2>
+<pre id="data-channel" style="height: 200px;"></pre>
+
+<h2>SDP</h2>
+
+<h3>Offer</h3>
+<pre id="offer-sdp"></pre>
+
+<h3>Answer</h3>
+<pre id="answer-sdp"></pre>
+
+<script src="VRMAvatar.js"></script>
+<script src="client.js"></script>
+</body>
+</html>
