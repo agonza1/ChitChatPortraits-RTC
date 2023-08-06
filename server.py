@@ -224,6 +224,7 @@ if __name__ == "__main__":
     app.router.add_get("/VRMAvatar.js", javascriptAvatar)
     app.router.add_get("/client.js", javascript)
     app.router.add_post("/offer", offer)
+    app.router.register_resource(web.StaticResource("/models","./models"))
     web.run_app(
         app, access_log=None, host=args.host, port=args.port, ssl_context=ssl_context
     )

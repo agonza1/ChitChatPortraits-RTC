@@ -2,7 +2,6 @@
     margin: 0;
     padding: 0;
     border: 0;
-    overflow: hidden;
   }
 
   button {
@@ -31,11 +30,12 @@
   }
   
   canvas {
-    position:absolute;
+    position:fixed;
     width:100vw !important;
     height:100vh !important;
     /*cursor: none;*/ 
-    z-index:1;
+    z-index: 1;
+    top: 25%;
   }
   
   .backplate{
@@ -58,13 +58,13 @@
     color:white;
     margin:10px;
     font-size:14px;
-  text-align:right;  
-  opacity:0.75;
-  font-family: Sans-Serif;
-  background-color:#2F5164;
-  padding:10px;
-  border-radius:5px;
-  z-index:1;
+    text-align:right;  
+    opacity:0.75;
+    font-family: Sans-Serif;
+    background-color:#2F5164;
+    padding:10px;
+    border-radius:5px;
+    z-index:1;
   }
   
   .infobar{

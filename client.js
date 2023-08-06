@@ -1,47 +1,48 @@
+import VRMAvatar from "./VRMAvatar.js";
 // get DOM elements
-var iceConnectionLog = document.getElementById('ice-connection-state'),
+const iceConnectionLog = document.getElementById('ice-connection-state'),
     iceGatheringLog = document.getElementById('ice-gathering-state'),
     signalingLog = document.getElementById('signaling-state');
 
 // peer connection
-var pc = null;
+let pc = null;
 
 // data channel
-var dc = null, dcInterval = null;
+let dc = null, dcInterval = null;
 
 // Instantiate the VRMAvatar class
 const myVRM = new VRMAvatar();
 
 function createPeerConnection() {
-    var config = {
+    const config = {
         sdpSemantics: 'unified-plan'
     };
-
+    
     if (document.getElementById('use-stun').checked) {
         config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
     }
-
-    pc = new RTCPeerConnection(config);
-
+    
+    const pc = new RTCPeerConnection(config);
+    
     // register some listeners to help debugging
-    pc.addEventListener('icegatheringstatechange', function() {
-        iceGatheringLog.textContent += ' -> ' + pc.iceGatheringState;
+    pc.addEventListener('icegatheringstatechange', () => {
+        iceGatheringLog.textContent += ` -> ${pc.iceGatheringState}`;
     }, false);
     iceGatheringLog.textContent = pc.iceGatheringState;
-
-    pc.addEventListener('iceconnectionstatechange', function() {
-        iceConnectionLog.textContent += ' -> ' + pc.iceConnectionState;
+    
+    pc.addEventListener('iceconnectionstatechange', () => {
+        iceConnectionLog.textContent += ` -> ${pc.iceConnectionState}`;
     }, false);
     iceConnectionLog.textContent = pc.iceConnectionState;
-
-    pc.addEventListener('signalingstatechange', function() {
-        signalingLog.textContent += ' -> ' + pc.signalingState;
+    
+    pc.addEventListener('signalingstatechange', () => {
+        signalingLog.textContent += ` -> ${pc.signalingState}`;
     }, false);
     signalingLog.textContent = pc.signalingState;
-
+    
     // connect audio / video
-    pc.addEventListener('track', function(evt) {
-        if (evt.track.kind == 'video') {
+    pc.addEventListener('track', (evt) => {
+        if (evt.track.kind === 'video') {
             document.getElementById('video').srcObject = evt.streams[0];
         } else {
             // Call the animate function to display avatar and start the animation with audio stream
@@ -50,16 +51,17 @@ function createPeerConnection() {
             document.getElementById('audio').srcObject = evt.streams[0];
         }
     });
-
-    return pc;
+    
+    return pc;    
 }
 
-function negotiate() {
-    return pc.createOffer().then(function(offer) {
-        return pc.setLocalDescription(offer);
-    }).then(function() {
-        // wait for ICE gathering to complete
-        return new Promise(function(resolve) {
+async function negotiate() {
+    try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        // Wait for ICE gathering to complete
+        await new Promise((resolve) => {
             if (pc.iceGatheringState === 'complete') {
                 resolve();
             } else {
@@ -72,22 +74,19 @@ function negotiate() {
                 pc.addEventListener('icegatheringstatechange', checkState);
             }
         });
-    }).then(function() {
-        var offer = pc.localDescription;
-        var codec;
 
-        codec = document.getElementById('audio-codec').value;
+        const codec = document.getElementById('audio-codec').value;
         if (codec !== 'default') {
             offer.sdp = sdpFilterCodec('audio', codec, offer.sdp);
         }
 
-        codec = document.getElementById('video-codec').value;
         if (codec !== 'default') {
             offer.sdp = sdpFilterCodec('video', codec, offer.sdp);
         }
 
         document.getElementById('offer-sdp').textContent = offer.sdp;
-        return fetch('/offer', {
+
+        const response = await fetch('/offer', {
             body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
@@ -98,44 +97,44 @@ function negotiate() {
             },
             method: 'POST'
         });
-    }).then(function(response) {
-        return response.json();
-    }).then(function(answer) {
+
+        const answer = await response.json();
         document.getElementById('answer-sdp').textContent = answer.sdp;
-        return pc.setRemoteDescription(answer);
-    }).catch(function(e) {
+        await pc.setRemoteDescription(answer);
+    } catch (e) {
         alert(e);
-    });
+    }
 }
 
-function start() {
+
+async function start() {
     document.getElementById('start').style.display = 'none';
 
     pc = createPeerConnection();
 
-    var time_start = null;
+    let time_start = null;
 
-    function current_stamp() {
+    const current_stamp = () => {
         if (time_start === null) {
             time_start = new Date().getTime();
             return 0;
         } else {
             return new Date().getTime() - time_start;
         }
-    }
+    };
 
-    var constraints = {
+    const constraints = {
         audio: document.getElementById('use-audio').checked,
         video: false
     };
 
     if (document.getElementById('use-video').checked) {
-        var resolution = document.getElementById('video-resolution').value;
+        const resolution = document.getElementById('video-resolution').value;
         if (resolution) {
-            resolution = resolution.split('x');
+            const [width, height] = resolution.split('x');
             constraints.video = {
-                width: parseInt(resolution[0], 0),
-                height: parseInt(resolution[1], 0)
+                width: parseInt(width, 10),
+                height: parseInt(height, 10)
             };
         } else {
             constraints.video = true;
@@ -143,23 +142,21 @@ function start() {
     }
 
     if (constraints.audio || constraints.video) {
-        // document.getElementById('media').style.display = 'block';
-        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-            stream.getTracks().forEach(function(track) {
-                pc.addTrack(track, stream);
-            });
-            return negotiate();
-        }, function(err) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            await negotiate();
+        } catch (err) {
             alert('Could not acquire media: ' + err);
-        });
+        }
     } else {
-        negotiate();
+        await negotiate();
     }
 
     document.getElementById('stop').style.display = 'inline-block';
 }
 
-function stop() {
+async function stop() {
     document.getElementById('stop').style.display = 'none';
 
     // close data channel
@@ -169,7 +166,7 @@ function stop() {
 
     // close transceivers
     if (pc.getTransceivers) {
-        pc.getTransceivers().forEach(function(transceiver) {
+        pc.getTransceivers().forEach(transceiver => {
             if (transceiver.stop) {
                 transceiver.stop();
             }
@@ -177,17 +174,16 @@ function stop() {
     }
 
     // close local audio / video
-    pc.getSenders().forEach(function(sender) {
+    pc.getSenders().forEach(sender => {
         sender.track.stop();
     });
 
     // close peer connection
-    setTimeout(function() {
-        pc.close();
-    }, 500);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    pc.close();
 }
 
-function sdpFilterCodec(kind, codec, realSdp) {
+const sdpFilterCodec = (kind, codec, realSdp) => {
     var allowed = []
     var rtxRegex = new RegExp('a=fmtp:(\\d+) apt=(\\d+)\r$');
     var codecRegex = new RegExp('a=rtpmap:([0-9]+) ' + escapeRegExp(codec))
@@ -244,14 +240,29 @@ function sdpFilterCodec(kind, codec, realSdp) {
     return sdp;
 }
 
-function interface() {
+const vrmInterface = async () => {
     myVRM.interface();
 }
 
-function hideinterface() {
+const hideVrmInterface = async () => {
     myVRM.hideinterface();
 }
 
-function escapeRegExp(string) {
+const handleButtonClick = async (buttonId, action) => {
+    const button = document.getElementById(buttonId);
+    button.addEventListener("click", async () => {
+        try {
+          const result = await action();
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+    });
+};
+handleButtonClick("start", start);
+handleButtonClick("stop", stop);
+handleButtonClick("interface", vrmInterface);
+handleButtonClick("hideInterface", hideVrmInterface);
+
+const escapeRegExp = (string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }

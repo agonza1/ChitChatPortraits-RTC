@@ -4,20 +4,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebRTC Audio to Avatar real time demo</title>
     <link rel="stylesheet" href="./style.css">
+    <!-- pixiv three-vrm.js -->
+    <!-- https://threejs.org/docs/#manual/en/introduction/Installation -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+        "three": "https://unpkg.com/three@0.155.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.155.0/examples/jsm/",
+        "@pixiv/three-vrm": "https://unpkg.com/@pixiv/three-vrm@2.0.1/lib/three-vrm.module.min.js"
+        }
+    }
+    </script>
 </head>
 <body>
-<!-- three.min.js r110 -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.110.0/build/three.min.js"></script>
-
-<!-- GLTFLoader.js -->
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r110/examples/js/loaders/GLTFLoader.js"></script>
-
-<!-- OrbitControls.js -->
-<script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r110/examples/js/controls/OrbitControls.js"></script>
-
-<!-- pixiv three-vrm.js -->
-<script src="https://unpkg.com/@pixiv/three-vrm@0.3.0/lib/three-vrm.js"></script>
-
 <h2>Options</h2>
 <div class="option">
     <input id="use-datachannel" type="checkbox"/>
@@ -65,8 +65,8 @@
     <label for="use-stun">Use STUN server</label>
 </div>
 
-<button id="start" onclick="start()">Start</button>
-<button id="stop" style="display: none" onclick="stop()">Stop</button>
+<button id="start">Start</button>
+<button id="stop" style="display: none">Stop</button>
 
 <h2>State</h2>
 <p>
@@ -87,9 +87,9 @@
 </div>
 
 <h2>Avatar Interface</h2>
-<div class="interface" id="interface" onclick="interface()">
+<div class="interface" id="interface">
 
-    <div class="closebtn" id="closebtn" onclick="hideinterface()">❌</div>
+    <div class="closebtn" id="hideInterface">❌</div>
 
     <div class="sliders" id="sliders">
 
@@ -123,8 +123,8 @@
     </div>
 </div>
 
-<script src="VRMAvatar.js"></script>
-<script src="client.js"></script>
+<script type="module" src="VRMAvatar.js"></script>
+<script type="module" src="client.js"></script>
 
 <h2>SDP</h2>
 <h3>Offer</h3>
