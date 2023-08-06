@@ -43,4 +43,3 @@ If you have issues capturing audio, make sure you enabled media access for unsec
 Initial code examples from:
 - https://github.com/aiortc/aiortc/tree/main
 - https://github.com/Automattic/VU-VRM
-

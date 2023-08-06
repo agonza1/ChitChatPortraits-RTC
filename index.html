@@ -1,4 +1,4 @@
-<html>
+<html style="overflow: auto;">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -20,7 +20,7 @@
 
 <h2>Options</h2>
 <div class="option">
-    <input id="use-datachannel" checked="checked" type="checkbox"/>
+    <input id="use-datachannel" type="checkbox"/>
     <label for="use-datachannel">Use datachannel</label>
     <select id="datachannel-parameters">
         <option value='{"ordered": true}'>Ordered, reliable</option>
@@ -123,18 +123,14 @@
     </div>
 </div>
 
-<h2>Data channel</h2>
-<pre id="data-channel" style="height: 200px;"></pre>
+<script src="VRMAvatar.js"></script>
+<script src="client.js"></script>
 
 <h2>SDP</h2>
-
 <h3>Offer</h3>
 <pre id="offer-sdp"></pre>
-
 <h3>Answer</h3>
 <pre id="answer-sdp"></pre>
 
-<script src="VRMAvatar.js"></script>
-<script src="client.js"></script>
 </body>
 </html>

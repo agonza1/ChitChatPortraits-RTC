@@ -132,12 +132,12 @@ async def offer(request):
     else:
         recorder = MediaBlackhole()
 
-    @pc.on("datachannel")
-    def on_datachannel(channel):
-        @channel.on("message")
-        def on_message(message):
-            if isinstance(message, str) and message.startswith("ping"):
-                channel.send("pong" + message[4:])
+    # @pc.on("datachannel")
+    # def on_datachannel(channel):
+    #     @channel.on("message")
+    #     def on_message(message):
+    #         if isinstance(message, str) and message.startswith("ping"):
+    #             channel.send("pong" + message[4:])
 
     @pc.on("connectionstatechange")
     async def on_connectionstatechange():
@@ -192,7 +192,7 @@ async def on_shutdown(app):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="WebRTC audio / video / data-channels demo"
+        description="WebRTC audio to avatar demo"
     )
     parser.add_argument("--cert-file", help="SSL certificate file (for HTTPS)")
     parser.add_argument("--key-file", help="SSL key file (for HTTPS)")

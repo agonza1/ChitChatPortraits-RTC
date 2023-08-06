@@ -1,6 +1,5 @@
 // get DOM elements
-var dataChannelLog = document.getElementById('data-channel'),
-    iceConnectionLog = document.getElementById('ice-connection-state'),
+var iceConnectionLog = document.getElementById('ice-connection-state'),
     iceGatheringLog = document.getElementById('ice-gathering-state'),
     signalingLog = document.getElementById('signaling-state');
 
@@ -45,8 +44,9 @@ function createPeerConnection() {
         if (evt.track.kind == 'video') {
             document.getElementById('video').srcObject = evt.streams[0];
         } else {
-            // Call the animate function to start the animation with audio stream
-            myVRM.animate(evt.streams[0]);
+            // Call the animate function to display avatar and start the animation with audio stream
+            myVRM.animate();
+            myVRM.initializeVoiceToAvatar(evt.streams[0]);
             document.getElementById('audio').srcObject = evt.streams[0];
         }
     });
@@ -124,32 +124,6 @@ function start() {
         }
     }
 
-    if (document.getElementById('use-datachannel').checked) {
-        var parameters = JSON.parse(document.getElementById('datachannel-parameters').value);
-
-        dc = pc.createDataChannel('chat', parameters);
-        dc.onclose = function() {
-            clearInterval(dcInterval);
-            dataChannelLog.textContent += '- close\n';
-        };
-        dc.onopen = function() {
-            dataChannelLog.textContent += '- open\n';
-            dcInterval = setInterval(function() {
-                var message = 'ping ' + current_stamp();
-                dataChannelLog.textContent += '> ' + message + '\n';
-                dc.send(message);
-            }, 1000);
-        };
-        dc.onmessage = function(evt) {
-            dataChannelLog.textContent += '< ' + evt.data + '\n';
-
-            if (evt.data.substring(0, 4) === 'pong') {
-                var elapsed_ms = current_stamp() - parseInt(evt.data.substring(5), 10);
-                dataChannelLog.textContent += ' RTT ' + elapsed_ms + ' ms\n';
-            }
-        };
-    }
-
     var constraints = {
         audio: document.getElementById('use-audio').checked,
         video: false
@@ -169,7 +143,7 @@ function start() {
     }
 
     if (constraints.audio || constraints.video) {
-        document.getElementById('media').style.display = 'block';
+        // document.getElementById('media').style.display = 'block';
         navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
             stream.getTracks().forEach(function(track) {
                 pc.addTrack(track, stream);

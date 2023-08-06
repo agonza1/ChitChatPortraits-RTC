@@ -1,21 +1,24 @@
-//expression setup
-var expressionyay = 0;
-var expressionoof = 0;
-var expressionlimityay = 0.5;
-var expressionlimitoof = 0.5;
-var expressionease = 100;
-var expressionintensity = 0.75;
-
 class VRMAvatar {
 
-    constructor() {
-      // Add your setup code here
+    constructor(audioStream) {
+      // expression setup
+      this.expressionyay = 0;
+      this.expressionoof = 0;
+      this.expressionlimityay = 0.5;
+      this.expressionlimitoof = 0.5;
+      this.expressionease = 100;
+      this.expressionintensity = 0.75;
+      this.blinking = false;
+      // interface setup
       this.mouththreshold = 10;
       this.mouthboost = 10;
       this.bodythreshold = 10;
       this.bodymotion = 10;
       this.expression = 80;
       this.clock = new THREE.Clock();
+      // initialize stream 
+      this.stream = audioStream;
+
       // renderer
       this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
       this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -58,11 +61,7 @@ class VRMAvatar {
       if (this.initvalues === true) {
         if (localStorage.localvalues) {
           this.initvalues = false;
-          document.getElementById("mouththreshold").value = this.mouththreshold;
-          document.getElementById("mouthboost").value = this.mouthboost;
-          document.getElementById("bodythreshold").value = this.bodythreshold;
-          document.getElementById("bodymotion").value = this.bodymotion;
-          document.getElementById("expression").value = this.expression;
+          this.setupInitialInterfaceValues();
         }
       }
   
@@ -77,7 +76,6 @@ class VRMAvatar {
       // document.getElementById("backplate").addEventListener("click", this.hideinterface);
     }
   
-    // Load VRM from a given URL
     load(url) {
       this.loader.crossOrigin = 'anonymous';
 
@@ -124,9 +122,6 @@ class VRMAvatar {
 
             vrm.lookAt.target = this.lookAtTarget;
             vrm.springBoneManager.reset();
-
-            this.currentVrm = vrm;
-            this.scene.add(vrm.scene);
             console.log(vrm);
           });
         },
@@ -135,19 +130,31 @@ class VRMAvatar {
       );
     }
 
-    // Load the default VRM
     loadDefaultVRM() {
       const defaultVRMURL = 'https://automattic.github.io/VU-VRM/assets/VU-VRM-elf.vrm';
       this.load(defaultVRMURL);
     }
+
+    initializeVoiceToAvatar(stream) {
+      this.stream = stream;
+      this.moveMouth();
+      this.blinkLoop();
+    }
+
+    setupInitialInterfaceValues() {
+      document.getElementById("mouththreshold").value = this.mouththreshold;
+      document.getElementById("mouthboost").value = this.mouthboost;
+      document.getElementById("bodythreshold").value = this.bodythreshold;
+      document.getElementById("bodymotion").value = this.bodymotion;
+      document.getElementById("expression").value = this.expression;
+    }
   
-    // Other methods for handling mic listener, interface, etc.
     blink() {
       // Generate a random blink timeout between 50ms and 300ms
       const blinkTimeout = Math.floor(Math.random() * 250) + 50;
     
       // Move the lookAtTarget position to simulate blinking
-      this.lookAtTarget.position.y = camera.position.y - camera.position.y * 2 + 1.25;
+      this.lookAtTarget.position.y = this.camera.position.y - this.camera.position.y * 2 + 1.25;
     
       // After the blinkTimeout, reset the eye blink blend shapes to open eyes
       setTimeout(() => {
@@ -160,11 +167,23 @@ class VRMAvatar {
       this.currentVrm.blendShapeProxy.setValue(THREE.VRMSchema.BlendShapePresetName.BlinkR, 1);   
     }
 
+    blinkLoop() {
+      this.blinking = true;
+      const rand = Math.round(Math.random() * 10000) + 1000;
+      setTimeout(() => {
+        this.blink();
+        this.blinkLoop();
+      }, rand);
+    }
+
     // Parse audio stream and animate on audio detection
-    moveMouth(stream) {
+    moveMouth() {
+      if (!this.stream) {
+        throw new Error(`Missing audio stream to move mouth`);
+      }
       const audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
-      const microphone = audioContext.createMediaStreamSource(stream);
+      const microphone = audioContext.createMediaStreamSource(this.stream);
       const javascriptNode = audioContext.createScriptProcessor(256, 1, 1);
 
       analyser.smoothingTimeConstant = 0.5;
@@ -174,7 +193,7 @@ class VRMAvatar {
       analyser.connect(javascriptNode);
       javascriptNode.connect(audioContext.destination);
 
-      javascriptNode.onaudioprocess = function () {
+      javascriptNode.onaudioprocess = () => {
         var array = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(array);
         var values = 0;
@@ -189,38 +208,46 @@ class VRMAvatar {
         var inputvolume = average;
 
         // audio in spectrum expressed as array
-        // console.log(array.toString());
+        console.log(array.toString());
         // useful for mouth shape variance
 
         // move the interface slider
         document.getElementById("inputlevel").value = inputvolume;
 
         // mic based / endless animations (do stuff)
+        console.log(this.currentVrm)
         if (this.currentVrm != undefined) {
           // best to be sure
 
           // talk
-          if (talktime == true) {
-            // todo: more vowelshapes
-            var voweldamp = 53;
-            var vowelmin = 12;
-            if (inputvolume > mouththreshold * 2) {
-              this.currentVrm.blendShapeProxy.setValue(
-                THREE.VRMSchema.BlendShapePresetName.A,
-                ((average - vowelmin) / voweldamp) * (mouthboost / 10)
-              );
-            } else {
-              this.currentVrm.blendShapeProxy.setValue(THREE.VRMSchema.BlendShapePresetName.A, 0);
-            }
+          // todo: more vowelshapes
+          var voweldamp = 53;
+          var vowelmin = 12;
+          if (inputvolume > this.mouththreshold * 2) {
+            console.log(`move mouth!`)
+            this.currentVrm.blendShapeProxy.setValue(
+              THREE.VRMSchema.BlendShapePresetName.A,
+              ((average - vowelmin) / voweldamp) * (this.mouthboost / 10)
+            );
+          } else {
+            this.currentVrm.blendShapeProxy.setValue(THREE.VRMSchema.BlendShapePresetName.A, 0);
           }
+
+          // yay/oof expression drift
+          this.expressionyay += (Math.random() - 0.5) / this.expressionease;
+          if(this.expressionyay > this.expressionlimityay){this.expressionyay=this.expressionlimityay};
+          if(this.expressionyay < 0){this.expressionyay=0};
+          this.currentVrm.blendShapeProxy.setValue(THREE.VRMSchema.BlendShapePresetName.Fun, this.expressionyay);
+          this.expressionoof += (Math.random() - 0.5) / this.expressionease;
+          if(this.expressionoof > this.expressionlimitoof){this.expressionoof=this.expressionlimitoof};
+          if(this.expressionoof < 0){this.expressionoof=0};
+          this.currentVrm.blendShapeProxy.setValue(THREE.VRMSchema.BlendShapePresetName.Angry, this.expressionoof);
         }
       };
     }
   
     // Animate avatar
-    animate(stream) {
-      this.moveMouth(stream);
-
+    animate() {
       requestAnimationFrame(this.animate.bind(this));
   
       const deltaTime = this.clock.getDelta();
@@ -230,17 +257,6 @@ class VRMAvatar {
       }
   
       this.renderer.render(this.scene, this.camera);
-
-      this.animate(stream);
-
-      // loop blink timing
-      (function loop() {
-        var rand = Math.round(Math.random() * 10000) + 1000;
-        setTimeout(function () {
-          blink();
-          loop();
-        }, rand);
-      })();
     }
 
     interface() {
@@ -270,17 +286,12 @@ class VRMAvatar {
     }
   
     hideinterface() {
-      // var a = document.getElementById("backplate");
       var b = document.getElementById("interface");
-      var x = document.getElementById("infobar");
-      var y = document.getElementById("credits");
-      a.style.display = "none";
       b.style.display = "none";
-      x.style.display = "none";
-      y.style.display = "none";
     }
 
     onWindowResize() {
+      console.log(`Resize ${window.innerWidth} ${window.innerHeight}`);
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
