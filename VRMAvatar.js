@@ -32,12 +32,12 @@ class VRMAvatar {
 
     // camera
     this.camera = new THREE.PerspectiveCamera(30.0, window.innerWidth / window.innerHeight, 0.1, 20.0);
-    this.camera.position.set(0.0, 1.45, 0.75);
+    this.camera.position.set(0, 1.75, -1.75);
 
     // camera controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.screenSpacePanning = true;
-    this.controls.target.set(0.0, 1.45, 0.0);
+    this.controls.target.set(0.0, 1.2, 0.0);
     this.controls.update();
 
     // scene
@@ -116,18 +116,17 @@ class VRMAvatar {
         // function randomsomesuch() {
         //   return (Math.random() - 0.5) / 10;
         // }
+        // vrm.humanoid.getNormalizedBoneNode('head').rotation.x = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('head').rotation.y = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('head').rotation.z = randomsomesuch();
 
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Head).rotation.x = randomsomesuch();
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Head).rotation.y = randomsomesuch();
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Head).rotation.z = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('neck').rotation.x = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('neck').rotation.y = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('neck').rotation.z = randomsomesuch();
 
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Neck).rotation.x = randomsomesuch();
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Neck).rotation.y = randomsomesuch();
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Neck).rotation.z = randomsomesuch();
-
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Spine).rotation.x = randomsomesuch();
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Spine).rotation.y = randomsomesuch();
-        // vrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName.Spine).rotation.z = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('spine').rotation.y = randomsomesuch();
+        // vrm.humanoid.getNormalizedBoneNode('spine').rotation.z = randomsomesuch();
 
         vrm.lookAt.target = this.lookAtTarget;
         vrm.springBoneManager.reset();
@@ -263,6 +262,13 @@ class VRMAvatar {
     if (this.currentVrm) {
       this.currentVrm.update(deltaTime);
     }
+
+    // helpers
+    // const gridHelper = new THREE.GridHelper( 10, 10 );
+    // this.scene.add( gridHelper );
+
+    // const axesHelper = new THREE.AxesHelper( 5 );
+    // this.scene.add( axesHelper );
 
     this.renderer.render(this.scene, this.camera);
   }
