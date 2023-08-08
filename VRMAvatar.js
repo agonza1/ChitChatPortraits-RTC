@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 class VRMAvatar {
 
-  constructor(audioStream) {
+  constructor(vrmurl, audioStream) {
     // expression setup
     this.expressionyay = 0;
     this.expressionoof = 0;
@@ -21,7 +21,9 @@ class VRMAvatar {
     this.bodymotion = 10;
     this.expression = 80;
     this.clock = new THREE.Clock();
-    // initialize stream 
+    // pass custom VRM URL
+    this.vrmurl = vrmurl;
+    // pass stream 
     this.stream = audioStream;
 
     // renderer
@@ -72,8 +74,12 @@ class VRMAvatar {
 
     this.interface();
 
-    // Call the load function with the default VRM URL
-    this.loadDefaultVRM();
+    // Call the VRM load function
+    if (this.vrmUrl) {
+      this.load(this.vrmurl);
+    } else {
+      this.loadDefaultVRM();
+    }
 
     // Add the event listener for window resize
     window.addEventListener('resize', this.onWindowResize, false);
@@ -266,7 +272,6 @@ class VRMAvatar {
     // helpers
     // const gridHelper = new THREE.GridHelper( 10, 10 );
     // this.scene.add( gridHelper );
-
     // const axesHelper = new THREE.AxesHelper( 5 );
     // this.scene.add( axesHelper );
 

@@ -11,7 +11,7 @@ let pc = null;
 let dc = null, dcInterval = null;
 
 // Instantiate the VRMAvatar class
-const myVRM = new VRMAvatar();
+const myVRM = new VRMAvatar('./models/VRM1_Constraint_Twist_Sample.vrm');
 
 function createPeerConnection() {
     const config = {

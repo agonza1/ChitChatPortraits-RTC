@@ -126,7 +126,7 @@ async def offer(request):
     log_info("Created for %s", request.remote)
 
     # prepare local media
-    player = MediaPlayer(os.path.join(ROOT, "RecordingWAV.wav"))
+    player = MediaPlayer(os.path.join(ROOT, args.play_from)) if args.play_from is not None else False
     if args.record_to:
         recorder = MediaRecorder(args.record_to)
     else:
@@ -151,7 +151,10 @@ async def offer(request):
         log_info("Track %s received", track.kind)
 
         if track.kind == "audio":
-            pc.addTrack(player.audio)
+            if player == False:
+                pc.addTrack(track)
+            else:
+                pc.addTrack(player.audio)
             recorder.addTrack(track)
         elif track.kind == "video":
             pc.addTrack(
@@ -202,6 +205,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--port", type=int, default=8080, help="Port for HTTP server (default: 8080)"
     )
+    parser.add_argument("--play-from", help="Read the media from a file and sent it."),
     parser.add_argument("--record-to", help="Write received media to a file."),
     parser.add_argument("--verbose", "-v", action="count")
     args = parser.parse_args()
