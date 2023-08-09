@@ -1,10 +1,33 @@
 # ChitChatPortraits-RTC
 Transmit audio via WebRTC and receive animated video talking portraits. 🗣️🖼️
 
+![Image](/assets/SpeechToAvatarWebRTC.gif?raw=true "WebRTC Sepeech to VRM Avatar")
+
 # Requirements
 
 - Python 3.11
 - Conda 23
+
+# Flow Chart
+
+```mermaid
+flowchart TD
+
+subgraph User A
+  A1[Connect using WebRTC]
+  A2[Receive audio stream]
+  A3[Render talking VRM Avatar]
+end
+
+subgraph Backend Server using AIORTC
+  B1[Receive WebRTC stream] --->   B2[Process audio]
+  B2[Process audio]
+end
+
+A1 -->|Audio Stream| B1
+B2 -->|Audio Stream| A2
+A2 -->|VRMAvatar.js| A3
+```
 
 # Getting Started
 
