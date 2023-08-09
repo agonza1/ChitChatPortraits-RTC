@@ -11,7 +11,7 @@ let pc = null;
 let dc = null, dcInterval = null;
 
 // Instantiate the VRMAvatar class
-const myVRM = new VRMAvatar('./models/VRM1_Constraint_Twist_Sample.vrm');
+const myVRM = new VRMAvatar('./models/boy.vrm');
 
 function createPeerConnection() {
     const config = {
@@ -181,6 +181,7 @@ async function stop() {
     // close peer connection
     await new Promise(resolve => setTimeout(resolve, 500));
     pc.close();
+    myVRM.end();
 }
 
 const sdpFilterCodec = (kind, codec, realSdp) => {

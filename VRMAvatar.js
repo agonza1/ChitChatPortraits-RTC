@@ -22,7 +22,7 @@ class VRMAvatar {
     this.expression = 80;
     this.clock = new THREE.Clock();
     // pass custom VRM URL
-    this.vrmurl = vrmurl;
+    this.vrmUrl = vrmurl;
     // pass stream 
     this.stream = audioStream;
 
@@ -34,12 +34,12 @@ class VRMAvatar {
 
     // camera
     this.camera = new THREE.PerspectiveCamera(30.0, window.innerWidth / window.innerHeight, 0.1, 20.0);
-    this.camera.position.set(0, 1.75, -1.75);
+    this.camera.position.set(0, 2.2, -2.2);
 
     // camera controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.screenSpacePanning = true;
-    this.controls.target.set(0.0, 1.2, 0.0);
+    this.controls.target.set(0.0, 1.35, 0.0);
     this.controls.update();
 
     // scene
@@ -76,7 +76,7 @@ class VRMAvatar {
 
     // Call the VRM load function
     if (this.vrmUrl) {
-      this.load(this.vrmurl);
+      this.load(this.vrmUrl);
     } else {
       this.loadDefaultVRM();
     }
@@ -113,26 +113,26 @@ class VRMAvatar {
         vrm.springBoneManager.reset();
 
         // un-T-pose
-        vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = -250;
+        vrm.humanoid.getNormalizedBoneNode('rightUpperArm').rotation.z = 250;
         vrm.humanoid.getNormalizedBoneNode('rightLowerArm').rotation.z = -0.2;
-        vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = 250;
+        vrm.humanoid.getNormalizedBoneNode('leftUpperArm').rotation.z = -250;
         vrm.humanoid.getNormalizedBoneNode('leftLowerArm').rotation.z = 0.2;
 
         // randomise init positions
-        // function randomsomesuch() {
-        //   return (Math.random() - 0.5) / 10;
-        // }
-        // vrm.humanoid.getNormalizedBoneNode('head').rotation.x = randomsomesuch();
-        // vrm.humanoid.getNormalizedBoneNode('head').rotation.y = randomsomesuch();
-        // vrm.humanoid.getNormalizedBoneNode('head').rotation.z = randomsomesuch();
+        function randomsomesuch() {
+          return (Math.random() - 0.5) / 10;
+        }
+        vrm.humanoid.getNormalizedBoneNode('head').rotation.x = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('head').rotation.y = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('head').rotation.z = randomsomesuch();
 
-        // vrm.humanoid.getNormalizedBoneNode('neck').rotation.x = randomsomesuch();
-        // vrm.humanoid.getNormalizedBoneNode('neck').rotation.y = randomsomesuch();
-        // vrm.humanoid.getNormalizedBoneNode('neck').rotation.z = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('neck').rotation.x = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('neck').rotation.y = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('neck').rotation.z = randomsomesuch();
 
-        // vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = randomsomesuch();
-        // vrm.humanoid.getNormalizedBoneNode('spine').rotation.y = randomsomesuch();
-        // vrm.humanoid.getNormalizedBoneNode('spine').rotation.z = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('spine').rotation.x = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('spine').rotation.y = randomsomesuch();
+        vrm.humanoid.getNormalizedBoneNode('spine').rotation.z = randomsomesuch();
 
         vrm.lookAt.target = this.lookAtTarget;
         vrm.springBoneManager.reset();
@@ -144,7 +144,7 @@ class VRMAvatar {
   }
 
   loadDefaultVRM() {
-    const defaultVRMURL = './models/VRM1_Constraint_Twist_Sample.vrm';
+    const defaultVRMURL = './models/girl.vrm';
     this.load(defaultVRMURL);
   }
 
@@ -221,14 +221,14 @@ class VRMAvatar {
       var inputvolume = average;
 
       // audio in spectrum expressed as array
-      console.log(array.toString());
+      // console.log(array.toString());
       // useful for mouth shape variance
 
       // move the interface slider
       document.getElementById("inputlevel").value = inputvolume;
 
       // mic based / endless animations (do stuff)
-      console.log(this.currentVrm)
+      // console.log(this.currentVrm)
       if (this.currentVrm != undefined) {
         // best to be sure
 
@@ -237,7 +237,6 @@ class VRMAvatar {
         var voweldamp = 53;
         var vowelmin = 12;
         if (inputvolume > this.mouththreshold * 2) {
-          console.log(`move mouth!`)
           this.currentVrm.expressionManager.setValue(
             'aa',
             ((average - vowelmin) / voweldamp) * (this.mouthboost / 10)
@@ -268,7 +267,6 @@ class VRMAvatar {
     if (this.currentVrm) {
       this.currentVrm.update(deltaTime);
     }
-
     // helpers
     // const gridHelper = new THREE.GridHelper( 10, 10 );
     // this.scene.add( gridHelper );
@@ -276,6 +274,12 @@ class VRMAvatar {
     // this.scene.add( axesHelper );
 
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // End avatar rendering in scene
+  end() {
+    this.scene.remove(this.currentVrm.scene);
+    this.hideinterface();
   }
 
   async interface() {
